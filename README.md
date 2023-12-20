@@ -359,3 +359,85 @@ rts.conf
 echo '# Sein | Stark
 Sein | Stark nih' > /var/www/html/index.html
 ```
+
+## No.1
+```
+IPETH0="$(ip -br a | grep eth0 | awk '{print $NF}' | cut -d'/' -f1)"
+iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source "$IPETH0" -s 192.197.0.0/20
+```
+### Before:
+![Screenshot 2023-12-16 033652](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/84bddd02-1eaa-4a63-a04d-6217c1f29e92)
+### After:
+![Screenshot 2023-12-16 035735](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/4d76a15e-5cc5-4b2b-afd5-d2bb4aa3433f)
+
+## No.2
+```
+iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+iptables -A INPUT -p tcp -j DROP
+iptables -A INPUT -p udp -j DROP
+```
+### Menggunakan koneksi TCP
+![Screenshot 2023-12-16 040237](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/a4d7145c-8a7a-4d70-ac5c-57a46a239b93)
+![Screenshot 2023-12-16 040230](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/65e8f59d-d062-4b54-ad3d-c43772817a03)
+
+## No.3
+```
+iptables -I INPUT -p icmp -m connlimit --connlimit-above 3 --connlimit-mask 0 -j DROP
+iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+```
+## No.4
+```
+iptables -A INPUT -p tcp --dport 22 -s 192.197.x.x -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j DROP
+```
+
+## No.5
+```
+iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
+iptables -A INPUT -j REJECT
+```
+
+## No.6
+```
+iptables -I INPUT 3 -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
+iptables -I INPUT 4 -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
+```
+
+## No.7
+```
+echo '
+Listen 80
+Listen 443
+
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
+' > /etc/apache2/ports.conf
+```
+
+## No.8
+```
+iptables -A INPUT -p tcp --dport 80 -s 192.197.1.104/30 -m time --datestart 2023-12-10 --datestop 2024-02-15 -j DROP
+```
+
+## No.9
+```
+iptables -N portscan
+
+iptables -A INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j DROP
+iptables -A FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j DROP
+
+iptables -A INPUT -m recent --name portscan --set -j ACCEPT
+iptables -A FORWARD -m recent --name portscan --set -j ACCEPT
+```
+
+## No.10
+```
+iptables -I INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
+
+iptables -I FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
+```
