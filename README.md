@@ -408,8 +408,9 @@ iptables -A INPUT -j REJECT
 
 ## No.6
 ```
-iptables -I INPUT 3 -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
-iptables -I INPUT 4 -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
+iptables -A INPUT -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
+iptables -A INPUT -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
+
 ```
 ### Sukses
 ![Screenshot 2023-12-21 103055](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/578d07c0-e82c-422e-ae06-fd00ebd92a9b)
@@ -435,8 +436,10 @@ Listen 443
 </IfModule>
 ' > /etc/apache2/ports.conf
 
+
 echo '# Sein | Stark
 Sein | Stark nih' > /var/www/html/index.html
+
 
 echo "
 <VirtualHost *:80>
