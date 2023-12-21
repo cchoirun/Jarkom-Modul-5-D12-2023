@@ -396,14 +396,31 @@ iptables -A INPUT -p tcp --dport 22 -j DROP
 iptables -A INPUT -m time --timestart 08:00 --timestop 16:00 --weekdays Mon,Tue,Wed,Thu,Fri -j ACCEPT
 iptables -A INPUT -j REJECT
 ```
+### Sukses
+![Screenshot 2023-12-21 102211](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/3c6544d5-d320-43e7-96ab-6e9e225a4dea)
+
+![Screenshot 2023-12-21 113409](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/effc53e3-5839-4564-8bbd-17d10c84e5f5)
+
+### Gagal
+![Screenshot 2023-12-21 102231](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/063ce577-29a0-4182-82ad-d0e6c5a4fb4b)
+
+![Screenshot 2023-12-21 102221](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/cd12d6ce-51d2-45c1-a5df-e61c696f09a6)
 
 ## No.6
 ```
 iptables -I INPUT 3 -m time --timestart 12:00 --timestop 13:00 --weekdays Mon,Tue,Wed,Thu -j REJECT
 iptables -I INPUT 4 -m time --timestart 11:00 --timestop 13:00 --weekdays Fri -j REJECT
 ```
+### Sukses
+![Screenshot 2023-12-21 103055](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/578d07c0-e82c-422e-ae06-fd00ebd92a9b)
+![Screenshot 2023-12-21 103027](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/b9adfb34-4731-439e-9553-694dc0f2695c)
 
+### Gagal
+![Screenshot 2023-12-21 103018](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/c402332b-2761-499c-bb6d-689d7384f1cd)
+![Screenshot 2023-12-21 103105](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/3ee1c86a-ad90-495a-b234-f2cb409238c4)
 ## No.7
+
+### Web Server
 ```
 echo '
 Listen 80
@@ -417,14 +434,51 @@ Listen 443
         Listen 443
 </IfModule>
 ' > /etc/apache2/ports.conf
+
+echo '# Sein | Stark
+Sein | Stark nih' > /var/www/html/index.html
+
+echo "
+<VirtualHost *:80>
+    ServerName 192.197.8.2
+    DocumentRoot /var/www/html
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+<VirtualHost *:443>
+    ServerName 192.197.8.2
+    DocumentRoot /var/www/html
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+" > /etc/apache2/sites-available/sein.conf
+
+a2ensite sein.conf
+service apache2 restart
+
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.197.8.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.197.8.2:80
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.197.8.2 -j DNAT --to-destination 192.197.14.142:80
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.197.14.142 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.197.14.142:443
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.197.14.142 -j DNAT --to-destination 192.197.14.142:443
+```
+### Client
+```
+curl 192.197.8.2:80
+curl 192.197.14.142:443
 ```
 
+![Screenshot 2023-12-21 110317](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/592cf290-da1f-40b5-9d89-f70be35d561c)
 ## No.8
+### ex: Sein
 ```
-iptables -A INPUT -p tcp --dport 80 -s 192.197.1.104/30 -m time --datestart 2023-12-10 --datestop 2024-02-15 -j DROP
+iptables -A INPUT -p tcp --dport 80 -s 192.197.14.150/30 -m time --datestart 2023-12-10 --datestop 2024-02-15 -j DROP
 ```
+
+![Screenshot 2023-12-21 112759](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/b84121cc-0137-4b7b-855a-8c617cac4edd)
+![Screenshot 2023-12-21 111336](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/bd7a3866-025c-48a9-9c15-8a0a7ac4bb33)
 
 ## No.9
+### ex: Stark
 ```
 iptables -N portscan
 
@@ -434,10 +488,39 @@ iptables -A FORWARD -m recent --name portscan --update --seconds 600 --hitcount 
 iptables -A INPUT -m recent --name portscan --set -j ACCEPT
 iptables -A FORWARD -m recent --name portscan --set -j ACCEPT
 ```
-
+![image](https://github.com/cchoirun/Jarkom-Modul-5-D12-2023/assets/116476269/50815ed1-51b1-4764-b1ae-f11a51d35f21)
 ## No.10
+### tambah di Stark
 ```
 iptables -I INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
 
 iptables -I FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
+```
+Karena pada log sebelumnya kita menentukan level log 4 (warning), selanjutnya kita perlu melakukan konfigurasi pada etc/rsyslog.d/50-default.conf untuk menambahkan configurasi kernel.warning                  -/var/log/iptables.log sehingga seperti configurasi dibawah ini
+```
+#
+# First some standard log files.  Log by facility.
+#
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          -/var/log/syslog
+#cron.*                         /var/log/cron.log
+#daemon.*                       -/var/log/daemon.log
+kern.*                          -/var/log/kern.log
+kernel.warning                  -/var/log/iptables.log
+#lpr.*                          -/var/log/lpr.log
+mail.*                          -/var/log/mail.log
+#user.*                         -/var/log/user.log
+
+#
+# Logging for the mail system.  Split it up so that
+# it is easy to write scripts to parse these files.
+#
+#mail.info                      -/var/log/mail.info
+#mail.warn                      -/var/log/mail.warn
+mail.err                        /var/log/mail.err
+```
+jika sudah kita perlu melakukan menjalankan command 
+```
+touch /var/log/iptables.log 
+/etc/init.d/rsyslog restart 
 ```
